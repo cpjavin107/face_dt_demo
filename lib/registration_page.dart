@@ -16,19 +16,48 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _nameController = TextEditingController();
-  File? _profileImage;
+  Uint8List? _profileImage;
   var image1 = Regula.MatchFacesImage();
   var image2 = Regula.MatchFacesImage();
   var img1 = Image.asset('assets/images/portrait.png');
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      if (pickedFile != null) {
-        _profileImage = File(pickedFile.path);
+
+  @override
+  void initState() {
+    super.initState();
+    initPlatformState();
+    const EventChannel('flutter_face_api/event/video_encoder_completion')
+        .receiveBroadcastStream()
+        .listen((event) {
+      var response = jsonDecode(event);
+      String transactionId = response["transactionId"];
+      bool success = response["success"];
+      print("video_encoder_completion:");
+      print("    success: $success");
+      print("    transactionId: $transactionId");
+    });
+  }
+
+  Future<void> initPlatformState() async {
+    Regula.FaceSDK.init().then((json) {
+      var response = jsonDecode(json);
+      if (!response["success"]) {
+        print("Init failed: ");
+        print(json);
       }
     });
   }
+
+
+  // Future<void> _pickImage() async {
+  //   final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  //
+  //   setState(() {
+  //     if (pickedFile != null) {
+  //       _profileImage = File(pickedFile.path);
+  //     }
+  //   });
+  // }
 
   showAlertDialog(BuildContext context, bool first) => showDialog(
       context: context,
@@ -69,6 +98,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (imageFile == null) return;
     // setState(() => _similarity = "nil");
     if (first) {
+      _profileImage=imageFile;
       image1.bitmap = base64Encode(imageFile);
       image1.imageType = type;
       setState(() {
@@ -139,7 +169,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           .ref()
           .child('profile_images')
           .child(fileName)
-          .putFile(_profileImage!);
+          .putData(_profileImage!);
 
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();

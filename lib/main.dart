@@ -6,12 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_face/registration_page.dart';
 import 'dart:async';
 import 'package:flutter_face_api_beta/face_api.dart' as Regula;
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp();
+  runApp(const MyNewApp());
 }
 
 class MyNewApp extends StatelessWidget {
@@ -19,7 +20,7 @@ class MyNewApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
         home: RegistrationScreen()
     );
   }
